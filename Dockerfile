@@ -5,13 +5,15 @@ ARG NGINX_VERSION=1.23.3-alpine-slim
 # First stage to build
 FROM node:${NODE_VERSION} AS build
 
-ENV NODE_ENV=production
 WORKDIR /opt/node_app
 
 RUN apk add --no-cache git && \
     git clone https://github.com/excalidraw/excalidraw ./ && \
-    yarn --ignore-optional --network-timeout 600000 && \
-    yarn build:app:docker
+    yarn --ignore-optional --network-timeout 600000
+
+ENV NODE_ENV=production
+
+RUN yarn build:app:docker
 
 # Second stage to run
 FROM nginx:${NGINX_VERSION}
