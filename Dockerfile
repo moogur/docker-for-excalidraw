@@ -9,14 +9,13 @@ ENV NODE_ENV=production
 WORKDIR /opt/node_app
 
 RUN apk add --no-cache git && \
-    git clone https://github.com/excalidraw/excalidraw && \
-    cd /opt/node_app/excalidraw && \
+    git clone https://github.com/excalidraw/excalidraw ./ && \
     yarn --ignore-optional --network-timeout 600000 && \
     yarn build:app:docker
 
 # Second stage to run
 FROM nginx:${NGINX_VERSION}
 
-COPY --from=build /opt/node_app/excalidraw/build /usr/share/nginx/html
+COPY --from=build /opt/node_app/build /usr/share/nginx/html
 
 HEALTHCHECK CMD wget -q -O /dev/null http://localhost || exit 1
