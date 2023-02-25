@@ -1,0 +1,41 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build-docker-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Global env"
+        id: global_env
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
+          echo "DOCKERHUB_IMAGE_NAME=docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
+
+      - name: "Version"
+        id: version
+        run: |
+          tag=${GITHUB_REF/refs\/tags\//}
+          version=${tag#v}
+          echo "VERSION=${version}" >> $GITHUB_OUTPUT
+
+      - name: "Build and tag image"
+        run: |
+          docker build -t "${{ steps.global_env.outputs.DOCKERHUB_IMAGE_NAME }}:latest" -t "${{ steps.global_env.outputs.DOCKERHUB_IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}" .
+
+      - name: "docker login"
+        run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p ${{secrets.GITHUB_TOKEN}}
+
+      - name: "Publish image"
+        env:
+          IMAGE_NAME: $GITHUB_REPOSITORY
+        run: |
+          docker push "docker.pkg.github.com/$GITHUB_REPOSITORY/${{ steps.global_env.outputs.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}"
+          docker push "docker.pkg.github.com/$GITHUB_REPOSITORY/${{ steps.global_env.outputs.IMAGE_NAME }}:latest"
