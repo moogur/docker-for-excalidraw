@@ -42,7 +42,7 @@ function checkLowercase() {
 # - include type
 function includeInTypes() {
   local value="$1"
-  local types_array=(feature bugfix docs style refactor perf test build config ci)
+  local types_array=(feature bugfix ci config refactor test docs)
 
   if [[ ! "${types_array[*]}" =~ ${value} ]]; then
     echo "Unknown type"

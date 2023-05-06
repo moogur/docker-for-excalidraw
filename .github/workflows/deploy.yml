@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
+  schedule:
+    - cron: "30 0 1 1,7 *"
 
 jobs:
   build-docker-job:
@@ -19,11 +21,19 @@ jobs:
           echo "IMAGE_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
           echo "DOCKERHUB_IMAGE_NAME=docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
 
-      - name: "Version"
+      - name: "Version from tag"
+        if: ${{ github.event.action == 'tags' }}
         id: version
         run: |
           tag=${GITHUB_REF/refs\/tags\//}
           version=${tag#v}
+          echo "VERSION=${version}" >> $GITHUB_OUTPUT
+
+      - name: "Auto version"
+        if: ${{ github.event.action == 'cron' }}
+        id: version
+        run: |
+          version=$(date +"%d.%m.%Y-auto")
           echo "VERSION=${version}" >> $GITHUB_OUTPUT
 
       - name: "Build and tag image"
