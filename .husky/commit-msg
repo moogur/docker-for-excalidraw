@@ -54,8 +54,8 @@ function includeInTypes() {
 # - validate task number
 function validateTaskNumber() {
   local value=$1
+  local regexp=$2
 
-  local regexp="^\[SRV-[0-9]+\]$"
   if [[ ! "$value" =~ $regexp ]]; then
     echo "The issue number is not specified correctly"
     echo "value = $value"
@@ -72,7 +72,7 @@ message=$(echo "$commit" | awk -F': ' '{print $2}')
 
 # checking
 ## TASK NUMBER
-validateTaskNumber "$task_number"
+validateTaskNumber "$task_number" "^\[SRV-[0-9]+\]$"
 
 ## TYPE
 checkEmpty "TYPE" "$type"

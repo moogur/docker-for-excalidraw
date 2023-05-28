@@ -8,44 +8,21 @@ on:
     - cron: "30 0 1 1,7 *"
 
 jobs:
-  build-docker-job:
+  variables:
     runs-on: ubuntu-latest
-
+    outputs:
+      ref: ${{ steps.vars.outputs.ref }}
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v3
-
-      - name: "Global env"
-        id: global_env
+      - name: "Set variables"
+        id: vars
         run: |
-          echo "IMAGE_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
-          echo "DOCKERHUB_IMAGE_NAME=docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
+          echo "ref=$GITHUB_REF" >> $GITHUB_OUTPUT
 
-      - name: "Version from tag"
-        if: ${{ github.event.action == 'tags' }}
-        id: version
-        run: |
-          tag=${GITHUB_REF/refs\/tags\//}
-          version=${tag#v}
-          echo "VERSION=${version}" >> $GITHUB_OUTPUT
-
-      - name: "Auto version"
-        if: ${{ github.event.action == 'cron' }}
-        id: version
-        run: |
-          version=$(date +"%d.%m.%Y-auto")
-          echo "VERSION=${version}" >> $GITHUB_OUTPUT
-
-      - name: "Build and tag image"
-        run: |
-          docker build -t "${{ steps.global_env.outputs.DOCKERHUB_IMAGE_NAME }}:latest" -t "${{ steps.global_env.outputs.DOCKERHUB_IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}" .
-
-      - name: "docker login"
-        run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p ${{secrets.GITHUB_TOKEN}}
-
-      - name: "Publish image"
-        env:
-          IMAGE_NAME: $GITHUB_REPOSITORY
-        run: |
-          docker push "docker.pkg.github.com/$GITHUB_REPOSITORY/${{ steps.global_env.outputs.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}"
-          docker push "docker.pkg.github.com/$GITHUB_REPOSITORY/${{ steps.global_env.outputs.IMAGE_NAME }}:latest"
+  deploy:
+    needs: [variables]
+    uses: moogur/all-workflows/.github/workflows/deploy_for_docker_container.yml@master
+    secrets: inherit
+    with:
+      repository: ${{ github.event.repository.name }}
+      event_name: ${{ github.event_name }}
+      ref: ${{ needs.variables.outputs.ref }}
