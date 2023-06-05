@@ -11,5 +11,3 @@ jobs:
   deploy:
     uses: moogur/all-workflows/.github/workflows/deploy_for_docker_container.yml@master
     secrets: inherit
-    with:
-      event_name: ${{ github.event_name }}
