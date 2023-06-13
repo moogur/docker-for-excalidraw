@@ -8,6 +8,15 @@ on:
     - cron: "30 0 1 1,7 *"
 
 jobs:
+  kanboard:
+    uses: moogur/all-workflows/.github/workflows/kanboard.yml@master
+    secrets: inherit
+    with:
+      kanboard_columns: '74,75,76,-,-,77,80'
+      project_type: 'multi_branch'
+      event_type: 'deploy'
+
   deploy:
+    needs: kanboard
     uses: moogur/all-workflows/.github/workflows/deploy_for_docker_container.yml@master
     secrets: inherit

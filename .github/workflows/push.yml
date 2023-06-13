@@ -1,0 +1,15 @@
+name: Update task
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  kanboard:
+    uses: moogur/all-workflows/.github/workflows/kanboard.yml@master
+    secrets: inherit
+    with:
+      kanboard_columns: '74,75,76,77,-,-,80'
+      project_type: 'single_branch'
+      event_type: 'push'

@@ -72,7 +72,7 @@ message=$(echo "$commit" | awk -F': ' '{print $2}')
 
 # checking
 ## TASK NUMBER
-validateTaskNumber "$task_number" "^\[SRV-[0-9]+\]$"
+validateTaskNumber "$task_number" "^\[DOC-[0-9]+\]$"
 
 ## TYPE
 checkEmpty "TYPE" "$type"
